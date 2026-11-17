@@ -1,0 +1,413 @@
+<title>HIF Relay Model Comparison</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column (~72ch) with wide tables and charts allowed to scroll inside their own boxes. */
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --ink: #12171d;
+  --ink-2: #47515c;
+  --muted: #7a8490;
+  --rule: #dce1e6;
+  --accent: #1d5ea8;
+  --accent-wash: #e6eef8;
+  --good: #0a7d36;
+  --warn: #9a6200;
+  --bad: #b3261e;
+  --s1: #2a78d6;   /* Random Forest */
+  --s2: #eb6834;   /* LightGBM */
+  --s3: #1baf7a;   /* CNN wide */
+  --grid: #e5e8ec;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1215; --surface: #171b20; --ink: #e8ecf0; --ink-2: #b4bcc6; --muted: #8590a0;
+    --rule: #2a3038; --accent: #6aa5ee; --accent-wash: #1a2a3d; --good: #4cc27a; --warn: #e0a640;
+    --bad: #f07a72; --s1: #3987e5; --s2: #d95926; --s3: #199e70; --grid: #252b33; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1215; --surface: #171b20; --ink: #e8ecf0; --ink-2: #b4bcc6; --muted: #8590a0;
+  --rule: #2a3038; --accent: #6aa5ee; --accent-wash: #1a2a3d; --good: #4cc27a; --warn: #e0a640;
+  --bad: #f07a72; --s1: #3987e5; --s2: #d95926; --s3: #199e70; --grid: #252b33; color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--font-body); }
+.page { max-width: 880px; margin: 0 auto; padding-block: 40px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 36px; }
+header { display: grid; gap: 10px; border-bottom: 2px solid var(--ink); padding-bottom: 18px; }
+.eyebrow { font: 500 12px/1.4 var(--font-data); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1 { font: 700 clamp(28px, 5vw, 40px)/1.1 var(--font-display); margin: 0; text-wrap: balance; }
+h2 { font: 700 22px/1.25 var(--font-display); margin: 0; text-wrap: balance; }
+h3 { font: 600 15px/1.4 var(--font-body); margin: 0; }
+p { margin: 0; max-width: 72ch; }
+.meta { color: var(--ink-2); font-size: 13.5px; }
+section { display: grid; gap: 14px; min-width: 0; }
+.verdict { background: var(--surface); border: 1px solid var(--rule); border-left: 4px solid var(--accent); padding: 20px 22px; display: grid; gap: 12px; }
+.verdict ul, .plain { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 74ch; }
+.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 640px; }
+th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { font: 600 12px/1.35 var(--font-body); color: var(--ink-2); vertical-align: bottom; white-space: normal; }
+td { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+td:first-child { font-family: var(--font-body); }
+tr.best td { background: var(--accent-wash); }
+tbody tr:last-child td { border-bottom: 0; }
+.pm { color: var(--muted); font-size: 12px; }
+.key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+.note { color: var(--ink-2); font-size: 13.5px; }
+.chip { display: inline-block; font: 600 11px/1 var(--font-body); letter-spacing: .04em; text-transform: uppercase; padding: 4px 7px; border-radius: 3px; border: 1px solid currentColor; }
+.chip.done { color: var(--good); } .chip.pending { color: var(--warn); }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.chart { background: var(--surface); border: 1px solid var(--rule); padding: 14px 14px 8px; display: grid; gap: 6px; min-width: 0; position: relative; }
+.chart svg { width: 100%; height: auto; display: block; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--ink-2); }
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--surface); font: 12px/1.45 var(--font-data); padding: 6px 8px; border-radius: 3px; white-space: nowrap; z-index: 2; }
+.timeline { display: grid; gap: 0; background: var(--surface); border: 1px solid var(--rule); }
+.step { display: grid; grid-template-columns: 52px 1fr; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--rule); }
+.step:last-child { border-bottom: 0; }
+.step .t { font: 600 14px/1.5 var(--font-data); color: var(--accent); }
+.step p { font-size: 14px; }
+details { background: var(--surface); border: 1px solid var(--rule); padding: 10px 14px; }
+summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+summary:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--rule); padding: 16px 18px; display: grid; gap: 8px; align-content: start; }
+footer { color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--rule); padding-top: 14px; }
+</style>
+
+<div class="page">
+<header>
+  <div class="eyebrow">IEEE 13-bus digital-twin HIF protection · journal extension · progress brief, 27 Oct 2026</div>
+  <h1>Wavelet features or an end-to-end CNN for the lateral HIF relay?</h1>
+  <p class="meta">Random Forest (deployed relay), LightGBM and a 1D-CNN on raw residual windows, scored on the same 900 Emanuel-arc runs, the same run-grouped folds and the same 180 held-out test runs. Stages 0–4 are complete, including closed-loop fault clearing in the Simulink twin with 3- and 5-cycle breakers, an inter-relay interlock, and a noise-augmented retraining of all three models.</p>
+</header>
+
+<section class="verdict" aria-labelledby="v">
+  <h2 id="v">Bottom line</h2>
+  <ul>
+    <li><b>On clean signals, end-to-end learning does not justify replacing the wavelet front end.</b> The best CNN detects <span class="num">78.6 ± 8.5 %</span> of test faults with <span class="num">9</span> false trips, against <span class="num">89.3 %</span> / <span class="num">4</span> for the deployed RF and <span class="num">97.1 ± 1.0 %</span> / <span class="num">2</span> for LightGBM on the same 87 db4 features.</li>
+    <li><b>The receptive field is a real cause, but only part of the gap.</b> The original CNN sees 63 samples (0.19 cycle). Widening it to 703 samples (2.1 cycles) at the same size lifts CV fault detection from <span class="num">49 %</span> to <span class="num">70 %</span>; the trees still sit at <span class="num">92–96 %</span>.</li>
+    <li><b>Under measurement noise the order flips, and noise-aware training widens the gap.</b> Trained on clean data, the wide CNN holds about <span class="num">79 %</span> detection up to σ = 0.1 A per phase while the RF falls to <span class="num">47 %</span> and LightGBM to <span class="num">62 %</span>. Retrained with noise, all three improve, but the CNN most: <span class="num">91 %</span> detection and <span class="num">92 %</span> weak-arc detection at 0.1 A, still <span class="num">89 %</span> at 0.2 A, against <span class="num">87 % / 64 %</span> for LightGBM and <span class="num">83 % / 50 %</span> for the RF at 0.1 A.</li>
+    <li><b>Noise-aware training also lifts the CNN on clean signals</b>, from <span class="num">78.6 %</span> to <span class="num">90.6 %</span> fault detection (weak arcs <span class="num">90.5 %</span>), level with the deployed RF and still below clean-trained LightGBM's <span class="num">97.1 %</span>. The trees pay a clean-signal price instead: LightGBM drops to <span class="num">93.2 %</span>, weak arcs <span class="num">78.6 %</span>.</li>
+    <li><b>In closed loop the breaker, not the classifier, sets the clearing time.</b> With a 3-cycle breaker all three relays clear a typical arc in a median of 80–84 ms (about 5 cycles); the relay choice moves the median by at most 4 ms. The CNN is the fastest and steadiest (every trip within 33.6 ms), but without coordination it disconnects the healthy 675 lateral in 46 of 48 runs with a fault on lateral 633.</li>
+    <li><b>An inter-relay interlock fixes selectivity for every model.</b> The first relay to trip blocks its neighbour; same-tick ties go to the lateral with the larger zero-sequence residual. Healthy-lateral trips fall from 64 to 0 across all 288 fault runs, with no change to any faulted-lateral trip time and no false trips on the decoys.</li>
+    <li><b>The CNN's clean-signal gap is a data-size effect.</b> On a learning curve the trees level off by about 360 training runs, while the CNN is still climbing steeply at 720 (fault detection 43 → 79 %). A power-law fit puts LightGBM-level detection at roughly 13,000 runs, 18 times the present set. The noisy copies, which triple the windows, landed exactly where that fit predicts (90.6 % against 89.9 %).</li>
+    <li><b>The noise-trained relays keep the closed-loop guarantees.</b> With the interlock and a 3-cycle breaker none of them trips the healthy lateral. LightGBM and the CNN clear all 32 fault runs (median 77 and 81 ms); the noise-trained RF misses the weak 675C arc in all four runs.</li>
+    <li><b>Recommendation for the edge relay: let the measurement noise decide, and keep the interlock either way.</b> Train every model with noise: clean-trained LightGBM is best only with almost no noise, and its false trips jump from 2 to about 26 at just 5 mA. If the residual noise stays at or below about 20 mA (70 dB against the 633 lateral load), noise-trained LightGBM is the better relay (92–93 % detection, 2–3 false trips, every closed-loop fault cleared). At about 50 mA the two are not significantly different overall, with the CNN ahead on weak arcs. From 0.1 A up, the noise-trained wide CNN is the more dependable relay. So end-to-end learning does not replace the wavelet front end outright; it earns its place where the signal is noisy. A hybrid of the two is the natural next step.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="setup">
+  <h2 id="setup">How the comparison was run</h2>
+  <p>Every model sees the same <span class="num">25,803</span> two-cycle windows (<span class="num">667</span> samples at 20 kHz, three phases of the lateral-head residual I<sub>physical</sub> − I<sub>twin</sub>). Folds and the test split are grouped by simulation run, so overlapping windows of one run never sit on both sides. All metrics come from one shared scoring function, which reproduces the deployed relay's stored numbers exactly.</p>
+  <div class="cols">
+    <div class="card"><h3>Random Forest (deployed)</h3><p class="note">100 bagged trees on 87 db4 5-level features (sub-band energy, entropy, std, max, time-domain moments, zero-sequence terms). The in-model relay since Review 2.</p></div>
+    <div class="card"><h3>LightGBM</h3><p class="note">Gradient-boosted trees on the same 87 features. Early stopping on 20 % of training runs; 212–285 boosting rounds.</p></div>
+    <div class="card"><h3>1D-CNN, four variants</h3><p class="note">Raw 3 × 667 window, no wavelets. Base (26 k params, 63-sample view) and wide (31 k params, 703-sample view), each with signed-log or linear reference scaling. Label-safe time-shift augmentation.</p></div>
+  </div>
+  <p class="note"><b>Fault detection</b> is the relay's 2-of-3 vote over each faulted lateral's windows (open loop). <b>False trips</b> count run/lateral sequences where the vote fires without a fault on that lateral, out of 360 test sequences. CNN and LightGBM rows are the mean ± sd of three training seeds.</p>
+</section>
+
+<section aria-labelledby="matrix">
+  <h2 id="matrix">Performance on the 180 held-out test runs</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Model</th><th>Window accuracy</th><th>Macro F1</th><th>HIF window recall</th><th>Fault detection</th><th>Weak-arc detection</th><th>False-HIF windows</th><th>False trips / 360</th></tr></thead>
+      <tbody>
+        <tr><td><span class="key" style="background:var(--s1)"></span>Random Forest (deployed)</td><td>97.3 %</td><td>0.937</td><td>89.5 %</td><td>89.3 %</td><td>82.1 %</td><td>0.31 %</td><td>4</td></tr>
+        <tr class="best"><td><span class="key" style="background:var(--s2)"></span>LightGBM</td><td>98.4 <span class="pm">± 0.3</span></td><td>0.966 <span class="pm">± 0.008</span></td><td>96.5 <span class="pm">± 1.5</span></td><td>97.1 <span class="pm">± 1.0</span></td><td>90.5 <span class="pm">± 4.1</span></td><td>0.16 %</td><td>2 <span class="pm">± 1</span></td></tr>
+        <tr><td><span class="key" style="background:var(--s3)"></span>CNN wide, reference scaling</td><td>91.8 <span class="pm">± 1.3</span></td><td>0.769 <span class="pm">± 0.049</span></td><td>75.9 <span class="pm">± 9.2</span></td><td>78.6 <span class="pm">± 8.5</span></td><td>81.0 <span class="pm">± 14.9</span></td><td>1.22 %</td><td>9.0 <span class="pm">± 2.6</span></td></tr>
+        <tr><td>CNN base, reference scaling</td><td>89.1 <span class="pm">± 0.4</span></td><td>0.675 <span class="pm">± 0.025</span></td><td>51.4 <span class="pm">± 6.6</span></td><td>55.3 <span class="pm">± 6.8</span></td><td>38.1 <span class="pm">± 17.6</span></td><td>1.14 %</td><td>11.3 <span class="pm">± 4.5</span></td></tr>
+        <tr><td>CNN wide, signed-log scaling</td><td>87.1 <span class="pm">± 1.4</span></td><td>0.636 <span class="pm">± 0.041</span></td><td>57.3 <span class="pm">± 6.8</span></td><td>61.5 <span class="pm">± 6.5</span></td><td>46.4 <span class="pm">± 7.1</span></td><td>2.88 %</td><td>19.7 <span class="pm">± 12.0</span></td></tr>
+        <tr><td>CNN base, signed-log scaling</td><td>86.2 <span class="pm">± 0.8</span></td><td>0.575 <span class="pm">± 0.037</span></td><td>41.6 <span class="pm">± 4.7</span></td><td>43.4 <span class="pm">± 3.4</span></td><td>25.0 <span class="pm">± 0.0</span></td><td>2.47 %</td><td>17.3 <span class="pm">± 0.6</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">Weak-arc detection on the test set rests on only 28 weak boundary-arc sequences, hence the wide CNN's ± 15 points. The cross-validation figures below (100 weak sequences) are the steadier estimate. Most false trips of every model are sympathetic votes on the healthy neighbouring lateral during a fault on the other one.</p>
+</section>
+
+<section aria-labelledby="rf">
+  <h2 id="rf">Receptive-field ablation (cross-validation, 720 training runs)</h2>
+  <p>The CNN taken from the hardware check covers 63 samples, about 3 ms. That is too short to compare the arc's positive and negative half-cycles, which is the Emanuel model's signature asymmetry and which the wavelet mean and skewness features capture directly. The ablation changes only the receptive field, at near-equal parameter count, in both input scalings.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>CNN variant</th><th>Receptive field</th><th>Parameters</th><th>Macro F1</th><th>Fault detection</th><th>Weak-arc detection</th><th>False trips / 1,440</th></tr></thead>
+      <tbody>
+        <tr><td>Base, signed-log</td><td>63 samples · 0.19 cycle</td><td>26,421</td><td>0.575</td><td>41.7 %</td><td>21 %</td><td>44</td></tr>
+        <tr><td>Base, reference</td><td>63 samples · 0.19 cycle</td><td>26,421</td><td>0.665</td><td>49.4 %</td><td>30 %</td><td>19</td></tr>
+        <tr><td>Wide, signed-log</td><td>703 samples · 2.1 cycles</td><td>30,645</td><td>0.616</td><td>61.0 %</td><td>35 %</td><td>82</td></tr>
+        <tr class="best"><td>Wide, reference</td><td>703 samples · 2.1 cycles</td><td>30,645</td><td>0.729</td><td>70.4 %</td><td>49 %</td><td>32</td></tr>
+        <tr><td><span class="key" style="background:var(--s1)"></span>Random Forest</td><td>87 wavelet features</td><td>100 trees</td><td>0.943</td><td>92.3 %</td><td>77 %</td><td>7</td></tr>
+        <tr><td><span class="key" style="background:var(--s2)"></span>LightGBM</td><td>87 wavelet features</td><td>650–1,385 trees</td><td>0.961</td><td>96.3 %</td><td>88 %</td><td>7</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul class="plain">
+    <li>Widening the view adds 19–21 points of fault detection in both scalings. Linear reference scaling beats signed-log by 8–9 points and trips far less often.</li>
+    <li>Signed-log overfits. The wide signed-log network memorises a 500-window check set perfectly, then makes 82 false trips in cross-validation, 9 of them before the fault starts.</li>
+    <li>A training sanity check rules out a pipeline fault: gradients of 0.1–6 in every layer, about half of ReLU outputs active, and every variant fits a small balanced set.</li>
+    <li>The remaining gap to the trees is mostly a data-size effect; see the learning curve below.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="noise">
+  <h2 id="noise">Behaviour under measurement noise</h2>
+  <p>White noise of fixed standard deviation σ is added per phase to the held-out test windows, exactly as in the Review 2 noise benchmark (same seeds; the RF reproduces its stored numbers to 4 × 10<sup>−16</sup>). The twin is noise-free, so the noise reaches the residual one to one. No model saw noise during training.</p>
+  <div class="legend" aria-hidden="true">
+    <span><span class="key" style="background:var(--s1)"></span>Random Forest (deployed)</span>
+    <span><span class="key" style="background:var(--s2)"></span>LightGBM (3 seeds)</span>
+    <span><span class="key" style="background:var(--s3)"></span>CNN wide, reference (3 seeds)</span>
+  </div>
+  <div class="charts">
+    <figure class="chart" style="margin:0"><h3>Fault detection (2-of-3 vote)</h3><svg id="c-dep" viewBox="0 0 400 250" role="img" aria-label="Fault detection versus noise sigma for three models"></svg></figure>
+    <figure class="chart" style="margin:0"><h3>False trips, of 360 sequences</h3><svg id="c-ft" viewBox="0 0 400 250" role="img" aria-label="False trips versus noise sigma for three models"></svg></figure>
+  </div>
+  <ul class="plain">
+    <li>The trees lose dependability from about 20 mA. Their weak-arc detection collapses first: at σ = 50 mA it is 18 % (RF) and 32 % (LightGBM), against 82 % for the wide CNN.</li>
+    <li>LightGBM is the most noise-sensitive model on security. Its false trips rise from 2 to about 26 at σ = 5 mA, an 82 dB signal-to-noise ratio against the 633 lateral load.</li>
+    <li>The wide CNN is flat up to σ = 0.1 A and breaks down between 0.2 and 0.5 A, with about 47 and 161 false trips. A likely reason, not yet tested, is that the trees lean on the high-frequency D1–D2 wavelet bands that white noise fills first.</li>
+  </ul>
+  <details>
+    <summary>Noise sweep as a table</summary>
+    <div class="table-wrap" style="margin-top:10px; border:0">
+      <table id="noise-table"><thead><tr><th>σ per phase</th><th>SNR vs 633 load</th><th>RF detection</th><th>LightGBM detection</th><th>CNN wide detection</th><th>RF false trips</th><th>LightGBM false trips</th><th>CNN wide false trips</th></tr></thead><tbody></tbody></table>
+    </div>
+  </details>
+</section>
+
+<section aria-labelledby="aug">
+  <h2 id="aug">Noise-augmented retraining</h2>
+  <p>All three models were retrained on the same set: the clean training windows plus two noisy copies of each (41,284 copies), each copy with its own σ drawn log-uniformly from 5 mA to 0.1 A. The training noise uses its own random stream and continuous σ, so no copy repeats a test level or test noise draw, and the sweep below still runs to 0.5 A. Recipes, hyperparameters and run-grouped early stopping are unchanged; LightGBM and the CNN again use three seeds.</p>
+  <figure class="chart" style="margin:0"><img src="fig_dl_noise_augmented.png" alt="Four panels against noise sigma: fault detection, weak-arc detection, false trips and false-HIF windows for RF, LightGBM and wide CNN, each clean-trained (dashed) and noise-augmented (solid). The noise-augmented CNN stays near 90 percent detection and weak-arc detection up to 0.2 A; the noise-augmented trees hold to 50 mA and then fall, weak arcs first." style="width:100%; height:auto; background:#fff"></figure>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Held-out test runs: fault detection · weak-arc detection · false trips / 360</th><th>No noise</th><th>σ = 50 mA</th><th>σ = 0.1 A</th><th>σ = 0.2 A</th></tr></thead>
+      <tbody>
+        <tr><td><span class="key" style="background:var(--s1)"></span>RF, clean-trained (deployed)</td><td>89.3 % · 82.1 % · 4</td><td>63.1 % · 17.9 % · 17</td><td>46.6 % · 7.1 % · 25</td><td>29.1 % · 0 % · 31</td></tr>
+        <tr><td><span class="key" style="background:var(--s1)"></span>RF, noise-augmented</td><td>90.3 % · 75.0 % · 2</td><td>89.3 % · 71.4 % · 3</td><td>82.5 % · 50.0 % · 3</td><td>52.4 % · 0 % · 2</td></tr>
+        <tr><td><span class="key" style="background:var(--s2)"></span>LightGBM, clean-trained</td><td>97.1 % · 90.5 % · 2</td><td>74.8 % · 32.1 % · 14</td><td>62.1 % · 10.7 % · 17.7</td><td>49.2 % · 8.3 % · 16.7</td></tr>
+        <tr><td><span class="key" style="background:var(--s2)"></span>LightGBM, noise-augmented</td><td>93.2 % · 78.6 % · 2.7</td><td>92.9 % · 81.0 % · 3.7</td><td>87.4 % · 64.3 % · 5.7</td><td>64.1 % · 33.3 % · 16.3</td></tr>
+        <tr><td><span class="key" style="background:var(--s3)"></span>CNN wide, clean-trained</td><td>78.6 % · 81.0 % · 9</td><td>78.6 % · 82.1 % · 9.3</td><td>79.0 % · 81.0 % · 9.3</td><td>67.6 % · 70.2 % · 46.7</td></tr>
+        <tr class="best"><td><span class="key" style="background:var(--s3)"></span>CNN wide, noise-augmented</td><td>90.6 % · 90.5 % · 5</td><td>90.6 % · 90.5 % · 5</td><td>91.3 % · 91.7 % · 6.3</td><td>89.3 % · 88.1 % · 6</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul class="plain">
+    <li><b>Do the trees regain the lead once they expect noise? Only on clean signals.</b> Noise-aware RF and LightGBM hold up to 50 mA, but weak-arc detection falls at 0.1 A (50 % and 64 %) and collapses at 0.2 A. The noise-trained CNN stays flat to 0.2 A, twice the largest noise it was trained on, and only breaks down at 0.5 A (59 % detection).</li>
+    <li><b>The CNN's clean-signal gain is the most telling result.</b> The extra noisy copies triple its training set, and its clean fault detection rises 12 points to 90.6 %, with seed spread shrinking from ± 8.5 to ± 2.0 points. The learning curve below confirms that 720 training runs are too few for end-to-end learning.</li>
+    <li><b>Security stays acceptable.</b> The noise-trained CNN makes 5–6 false trips per 360 sequences up to 0.2 A. Up to 0.1 A every one is a sympathetic vote on the neighbouring lateral, the kind the interlock removed in closed loop; at 0.2 A one seed adds one vote before the fault starts. The noise-trained trees make 2–6 up to 0.1 A, but from 0.1 A some of theirs fall on normal or switching runs, and LightGBM reaches 16 at 0.2 A.</li>
+    <li>Clean training still wins for LightGBM on a clean signal. Noise augmentation costs it 3.9 points of detection and 12 points of weak-arc detection, so the training regime should match the relay's real noise floor.</li>
+  </ul>
+  <p class="note">Weak-arc figures rest on 28 test sequences. Closed-loop results of the noise-trained relays follow. Paper figure: <span class="num">results/report_figures/fig_dl_noise_augmented.pdf</span>.</p>
+</section>
+
+<section aria-labelledby="aug-loop">
+  <h2 id="aug-loop">Noise-trained relays in the closed loop</h2>
+  <p>The three noise-trained models were exported to the in-model relay (seed chosen by early-stopping loss; MATLAB and Python labels agree on all 5,161 test windows) and run through the same 32 fault runs and 4 decoys, with the interlock on and a 3-cycle breaker. The twin itself has no measurement noise, so this checks timing and selectivity, not noise tolerance.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Relay (3-cycle breaker, interlock on)</th><th>Faults cleared</th><th>Healthy lateral tripped</th><th>Trip asserted, median (range)</th><th>Fault cleared, median (range)</th><th>Isolation confirmed, median (max)</th><th>Weak-arc trip, median</th></tr></thead>
+      <tbody>
+        <tr><td><span class="key" style="background:var(--s1)"></span>RF, noise-trained</td><td>28 / 32</td><td>0</td><td>16.9 ms (8.5–75.3)</td><td>73.0 ms (64.8–131.4) · 4.4 cyc</td><td>88.7 (147.8) ms</td><td>55.5 ms</td></tr>
+        <tr><td><span class="key" style="background:var(--s2)"></span>LightGBM, noise-trained</td><td>32 / 32</td><td>0</td><td>18.9 ms (8.5–58.6)</td><td>77.0 ms (64.8–115.6) · 4.6 cyc</td><td>89.5 (128.2) ms</td><td>44.0 ms</td></tr>
+        <tr class="best"><td><span class="key" style="background:var(--s3)"></span>CNN wide, noise-trained</td><td>32 / 32</td><td>0</td><td>25.2 ms (14.8–48.1)</td><td>81.1 ms (70.9–105.0) · 4.9 cyc</td><td>95.0 (117.8) ms</td><td>33.5 ms</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul class="plain">
+    <li><b>The zero-sympathetic-trip result holds</b> for all three noise-trained relays, and none trips on the healthy feeder, capacitor switching or the load step.</li>
+    <li>The noise-trained trees trip earlier overall (median 17–19 ms over all 32 runs, against 26–27 ms for their clean versions), but the CNN is still the fastest on weak arcs and has the tightest worst case (48.1 ms).</li>
+    <li>The noise-trained RF misses the weak 675C arc at all four inception instants (its clean version missed two), in line with its lower offline weak-arc detection. The noise-trained LightGBM and CNN clear every fault.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="lc">
+  <h2 id="lc">Learning curve: is the CNN short of data?</h2>
+  <p>Each model was trained on nested subsets of 25, 50, 75 and 100 % of the 720 training runs (stratified by event type and dataset, three repeats with different subsets and seeds, same recipes) and tested on the same 180 held-out runs.</p>
+  <figure class="chart" style="margin:0"><img src="fig_dl_learning_curve.png" alt="Macro F1, fault detection and weak-arc detection against 180 to 720 training runs. RF and LightGBM are nearly flat above 90 percent detection from 360 runs; the wide CNN rises steeply from 43 to 79 percent with large spread; a star marks the noise-augmented CNN at about 91 percent." style="width:100%; height:auto; background:#fff"></figure>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Fault detection (mean ± sd of 3 repeats)</th><th>183 runs</th><th>362 runs</th><th>543 runs</th><th>720 runs</th></tr></thead>
+      <tbody>
+        <tr><td><span class="key" style="background:var(--s1)"></span>Random Forest</td><td>82.8 ± 0.6 %</td><td>91.3 ± 1.7 %</td><td>90.9 ± 0.6 %</td><td>91.9 ± 1.1 %</td></tr>
+        <tr><td><span class="key" style="background:var(--s2)"></span>LightGBM</td><td>90.3 ± 1.7 %</td><td>94.8 ± 0.6 %</td><td>95.8 ± 1.5 %</td><td>97.1 ± 1.0 %</td></tr>
+        <tr><td><span class="key" style="background:var(--s3)"></span>CNN wide</td><td>42.7 ± 21.3 %</td><td>69.9 ± 11.7 %</td><td>71.8 ± 13.5 %</td><td>78.6 ± 8.5 %</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul class="plain">
+    <li><b>The trees have what they need; the CNN does not.</b> RF and LightGBM gain little beyond 360 runs, because the db4 features already encode the physics. The CNN is still climbing at 720 runs, and its spread across repeats broadly shrinks as data grows.</li>
+    <li><b>How much more data?</b> A power law fitted to the CNN's missed-fault rate (exponent −0.68) reaches LightGBM's 97.1 % at roughly 13,000 training runs, 18 times the current set. This is a long extrapolation from four noisy points; treat it as an order of magnitude.</li>
+    <li><b>The same fit explains the noise-augmentation gain.</b> It predicts 89.9 % detection for three times the data; the two noisy copies per window, which triple the training windows without adding runs, gave 90.6 %. Noise augmentation works for the CNN largely as data multiplication.</li>
+    <li>So the clean-signal gap is a data-size effect, and closing it by simulation alone would take an order of magnitude more runs. The wavelet front end is, in effect, prior knowledge that a CNN would otherwise have to learn from data.</li>
+  </ul>
+  <p class="note">The 100 % points are the final models of the main comparison. The RF's 100 % repeats use the deployed recipe but are retrained, so they differ slightly from the deployed relay (24 of 5,161 test labels). Paper figure: <span class="num">results/report_figures/fig_dl_learning_curve.pdf</span>.</p>
+</section>
+
+<section aria-labelledby="compute">
+  <h2 id="compute">Compute footprint per relay decision</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Model</th><th>Size</th><th>Work per decision</th><th>Stored</th><th>Classifier (median / p99)</th><th>db4 front end (median / p99)</th><th>Whole decision (median)</th></tr></thead>
+      <tbody>
+        <tr><td><span class="key" style="background:var(--s1)"></span>Random Forest</td><td>100 trees, 36,791 splits</td><td>1,226 comparisons</td><td>5.1 MB</td><td>0.24 / 0.52 ms</td><td>1.92 / 3.37 ms</td><td>2.17 ms</td></tr>
+        <tr><td><span class="key" style="background:var(--s2)"></span>LightGBM</td><td>1,060–1,425 trees</td><td>5,100–7,200 comparisons</td><td>3.2–4.4 MB</td><td>0.08–0.11 / 0.21–0.28 ms</td><td>1.92 / 3.37 ms</td><td>≈ 2.0 ms</td></tr>
+        <tr><td><span class="key" style="background:var(--s3)"></span>CNN wide</td><td>30,645 params</td><td>1.87 M MAC</td><td>122 KB</td><td>0.34 / 1.01 ms</td><td>none</td><td>0.34 ms</td></tr>
+        <tr><td>CNN base</td><td>26,421 params</td><td>2.43 M MAC</td><td>105 KB</td><td>0.27 / 0.85 ms</td><td>none</td><td>0.27 ms</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">All timings are measured on mains power, on one core, one window at a time, over all 5,161 test windows (Core i5-12450H). The relay decides every half cycle, so the budget is 8.35 ms, and every pipeline fits it with at least a 2× margin at p99. The CNN is 25–40 times smaller to store than the tree models.</p>
+  <p class="note"><b>Like for like inside the MATLAB relay block</b> (interpreted, one thread, all test windows): RF with db4 features 2.17 ms per decision, LightGBM with db4 features 2.29 ms, wide CNN 0.41 ms. The table's CNN and LightGBM classifier times come from their compiled libraries (PyTorch, LightGBM C++), so read across environments with care. By operation count the wavelet route is the lighter one: a 5-level db4 decomposition of three 667-sample phases plus the statistics is on the order of 0.1 M arithmetic operations by our estimate, against about 2 M multiply-accumulates for either CNN. On a relay with compiled firmware, the wavelet + tree pipeline should be the cheaper of the two; in interpreted MATLAB the CNN is five times faster.</p>
+</section>
+
+<section aria-labelledby="timing">
+  <h2 id="timing">Closed-loop fault clearing in the twin (Stage 4) <span class="chip done">measured</span></h2>
+  <p>Each relay runs inside <code>ieee13_hif_twin_system.slx</code>, and its trip opens the lateral breaker in both the feeder and the twin. 300 runs: three relays × breaker operating time 0, 3 or 5 cycles × the 8 HIF verification cases × 4 inception instants spread over one 8.35 ms decision period, plus the healthy feeder and three switching decoys per relay. The MATLAB LightGBM and CNN reproduce the Python labels on all 5,161 test windows, and with zero breaker delay the edited model reproduces the original 12-case suite sample for sample.</p>
+  <div class="timeline">
+    <div class="step"><span class="t">t₀</span><p><b>Fault inception.</b> The Emanuel arc branch closes; the arc strikes within 0.8 ms.</p></div>
+    <div class="step"><span class="t">t₁</span><p><b>First HIF decision</b> on the faulted lateral. Two-cycle windows, re-evaluated every 8.35 ms.</p></div>
+    <div class="step"><span class="t">t₂</span><p><b>Trip asserted.</b> The 2-of-3 vote latches.</p></div>
+    <div class="step"><span class="t">t₃</span><p><b>Contacts part.</b> t₂ plus the breaker's operating time (3 cycles = 50 ms, 5 cycles = 83.3 ms), modelled as a delay in the trip path.</p></div>
+    <div class="step"><span class="t">t₄</span><p><b>Fault cleared.</b> The arc current stops for good; the breaker interrupts at current zero.</p></div>
+    <div class="step"><span class="t">t₅</span><p><b>Isolation confirmed.</b> Lateral current and twin residual below 0.05 A for one full cycle.</p></div>
+  </div>
+  <figure class="chart" style="margin:0"><img src="fig_dl_clearing_times.png" alt="Left: fault-clearing time of every run for RF, LightGBM and wide CNN at breaker operating times of 0, 3 and 5 cycles, with medians around 30-34, 80-84 and 113-117 ms. Right: median stage breakdown for the 3-cycle breaker, dominated by the 50 ms breaker opening." style="width:100%; height:auto; background:#fff"></figure>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Relay</th><th>Breaker</th><th>Faults cleared</th><th>Healthy lateral also tripped</th><th>Trip asserted, t₂ − t₀ (median, range)</th><th>Fault cleared, t₄ − t₀ (median, range)</th><th>Isolation confirmed, t₅ − t₀ (median, max)</th></tr></thead>
+      <tbody>
+        <tr><td><span class="key" style="background:var(--s1)"></span>Random Forest</td><td>0 cycles</td><td>30 / 32</td><td>0</td><td>27.3 ms (12.7–58.6)</td><td>33.9 ms (18.7–65.6) · 2.0 cyc</td><td>49.5 (78.3) ms</td></tr>
+        <tr><td></td><td>3 cycles</td><td>30 / 32</td><td>4</td><td>27.3 ms (12.7–58.6)</td><td>83.9 ms (68.7–115.6) · 5.0 cyc</td><td>99.5 (128.3) ms</td></tr>
+        <tr><td></td><td>5 cycles</td><td>30 / 32</td><td>4</td><td>27.3 ms (12.7–58.6)</td><td>117.3 ms (102.1–149.0) · 7.0 cyc</td><td>132.8 (161.6) ms</td></tr>
+        <tr><td><span class="key" style="background:var(--s2)"></span>LightGBM</td><td>0 cycles</td><td>32 / 32</td><td>1</td><td>26.3 ms (14.8–48.2)</td><td>33.9 ms (17.7–55.0) · 2.0 cyc</td><td>47.8 (70.7) ms</td></tr>
+        <tr class="best"><td></td><td>3 cycles</td><td>32 / 32</td><td>4</td><td>26.3 ms (14.8–48.2)</td><td>83.9 ms (67.7–105.0) · 5.0 cyc</td><td>97.8 (120.7) ms</td></tr>
+        <tr><td></td><td>5 cycles</td><td>32 / 32</td><td>5</td><td>26.3 ms (14.8–48.2)</td><td>117.3 ms (101.0–138.3) · 7.0 cyc</td><td>131.2 (154.1) ms</td></tr>
+        <tr><td><span class="key" style="background:var(--s3)"></span>CNN wide</td><td>0 cycles</td><td>32 / 32</td><td>14</td><td>24.2 ms (16.9–33.6)</td><td>29.9 ms (21.1–44.5) · 1.8 cyc</td><td>45.7 (54.0) ms</td></tr>
+        <tr><td></td><td>3 cycles</td><td>32 / 32</td><td>16</td><td>24.2 ms (16.9–33.6)</td><td>79.9 ms (71.1–94.5) · 4.8 cyc</td><td>95.7 (104.0) ms</td></tr>
+        <tr><td></td><td>5 cycles</td><td>32 / 32</td><td>16</td><td>24.2 ms (16.9–33.6)</td><td>113.2 ms (104.4–127.8) · 6.8 cyc</td><td>129.1 (137.3) ms</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul class="plain">
+    <li><b>Where the time goes</b> (3-cycle breaker, medians): detection 15.8–19.0 ms, 2-of-3 confirmation 8.35 ms (one decision period), breaker opening 50 ms, arc extinction 6.2–6.4 ms (0–10.9 ms) at the next current zero. Isolation is confirmed one cycle after extinction (median 16.4 ms later).</li>
+    <li><b>Weak arcs show the real difference in relay speed.</b> Median trip on the two weak-arc cases: CNN 29.4 ms, LightGBM 38.8 ms, RF 42.9 ms (worst case 33.6, 48.2 and 58.6 ms).</li>
+    <li><b>Dependability.</b> The RF misses the weak 675C arc at 2 of its 4 inception instants: it never latches, and the arc is still burning when the 450 ms run ends. LightGBM and the CNN clear every fault run.</li>
+    <li><b>Selectivity is the closed-loop weak point.</b> The CNN's 675 relay trips on 46 of 48 runs with a fault on lateral 633, even with an instant breaker. The RF and LightGBM trip the healthy lateral mainly on 633C faults and mostly with a slow breaker (RF 0 → 4 of 32 runs going from 0 to 3 cycles): the longer the arc burns, the more chances the neighbouring relay gets to misread it.</li>
+    <li><b>The fix is a coordination interlock, not a new classifier.</b> In every sympathetic run the faulted lateral tripped first (52 of 64, by 8–109 ms) or on the same decision tick (12). See the interlock results below.</li>
+    <li>No relay tripped on the healthy feeder, capacitor switching or the load step. The measured RF range with a 3-cycle breaker (68.7–115.6 ms) matches the earlier arithmetic bound of 67–117 ms.</li>
+  </ul>
+  <p class="note">The closed-loop set is 8 fixed arcs, so the CNN's 32 of 32 here does not contradict its 78.6 % offline detection over 103 randomised test arcs. Paper figures: <span class="num">results/report_figures/fig_dl_clearing_times.pdf</span> and <span class="num">fig_dl_clearing_example.pdf</span>. The table above is without the interlock.</p>
+</section>
+
+<section aria-labelledby="interlock">
+  <h2 id="interlock">Inter-relay interlock <span class="chip done">built and verified</span></h2>
+  <p>A coordinator between the two relays and their breaker commands. The first relay to trip is granted; its neighbour is blocked for the breaker operating time plus 60 ms (its two-cycle window, the slowest arc extinction and one decision period). A blocked relay is reset every step, so once the block lifts it can only trip on fresh evidence of a fault on its own lateral. When both relays latch on the same 8.35 ms tick, the lateral with the larger zero-sequence residual energy over the last two cycles wins. With the interlock switched off, the model reproduces the original 12-case suite sample for sample.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Relay</th><th>Breaker</th><th>Healthy lateral tripped, no interlock</th><th>With interlock</th><th>Faults cleared (both)</th><th>Faulted-lateral trip time change</th></tr></thead>
+      <tbody>
+        <tr><td><span class="key" style="background:var(--s1)"></span>Random Forest</td><td>0 / 3 / 5 cycles</td><td>0 / 4 / 4</td><td>0 / 0 / 0</td><td>30 / 32</td><td>none</td></tr>
+        <tr><td><span class="key" style="background:var(--s2)"></span>LightGBM</td><td>0 / 3 / 5 cycles</td><td>1 / 4 / 5</td><td>0 / 0 / 0</td><td>32 / 32</td><td>none</td></tr>
+        <tr><td><span class="key" style="background:var(--s3)"></span>CNN wide</td><td>0 / 3 / 5 cycles</td><td>14 / 16 / 16</td><td>0 / 0 / 0</td><td>32 / 32</td><td>none</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul class="plain">
+    <li>Median clearing times are unchanged (at most one 50 µs sample, because the healthy lateral now stays energised). The decoy cases still cause no trips.</li>
+    <li><b>The tie-break has to use the zero-sequence residual.</b> The first version broke ties on total residual energy and picked the healthy lateral in 6 of 12 ties: a weak arc carries less current than the neighbouring lateral's response to the voltage sag, so the faulted lateral then waited out the whole block and cleared 75–158 ms later. Measured at the tie instant, only the zero-sequence residual was larger on the faulted lateral in every tie (worst ratio 1.42). That fits the physics: an HIF is a ground fault and returns as 3I<sub>0</sub>, while the sag response of the healthy lateral is largely balanced.</li>
+    <li>The 12 ties are only 4 distinct situations, because the breaker time cannot change anything before the trip, so the zero-sequence rule is well founded but lightly validated.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="caveats">
+  <h2 id="caveats">Open items and caveats</h2>
+  <ul class="plain">
+    <li>The noise model is white Gaussian noise on the residual only, trained up to 0.1 A. CT saturation, harmonics from the measurement chain and noise on the twin side are not modelled.</li>
+    <li>The closed-loop twin runs without measurement noise, so it checks the noise-trained relays' timing and selectivity, not their noise tolerance.</li>
+    <li>The learning-curve extrapolation (about 13,000 runs to reach LightGBM) rests on four noisy points and should be read as an order of magnitude.</li>
+    <li>Results come from one simulated feeder with one arc model; there is no field data yet.</li>
+    <li>The breaker is a fixed operating time followed by the Simscape breaker's current-zero interruption: no arc inside the breaker, no restrike and no reclosing.</li>
+    <li>The interlock assumes one fault at a time: a genuine second fault on the neighbouring lateral within the block window (breaker time + 60 ms) is held until the window ends. Its tie-break rests on 4 distinct tie situations.</li>
+  </ul>
+</section>
+
+<footer>Source data: <span class="num">results/dl/scores_cv.csv</span>, <span class="num">scores_test.csv</span>, <span class="num">noise_robustness_models.csv</span>, <span class="num">compute_python.json</span>, <span class="num">compute_matlab.json</span>, <span class="num">clearing_times.csv</span>, <span class="num">clearing_times_summary.csv</span>, <span class="num">clearing_times_interlock.csv</span>, <span class="num">interlock_comparison.csv</span>, <span class="num">clearing_times_interlock_noiseaug.csv</span>, <span class="num">learning_curve_summary.csv</span>. Paper figure for the noise sweep: <span class="num">results/report_figures/fig_dl_noise_robustness.pdf</span> (vector) and <span class="num">.png</span> (300 dpi). Scripts in <span class="num">scripts/</span> and <span class="num">dl/</span> of the project repository.</footer>
+</div>
+
+<script>
+(function () {
+  const sig = [0, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5];
+  const series = [
+    { name: 'Random Forest', color: '--s1', dep: [89.3, 90.3, 88.3, 80.6, 63.1, 46.6, 29.1, 16.5], ft: [4, 8, 6, 4, 17, 25, 31, 8] },
+    { name: 'LightGBM', color: '--s2', dep: [97.1, 95.8, 94.2, 92.2, 74.8, 62.1, 49.2, 39.8], ft: [2, 26.3, 21.7, 21.3, 14, 17.7, 16.7, 117.7] },
+    { name: 'CNN wide', color: '--s3', dep: [78.6, 78.6, 79.3, 78.3, 78.6, 79.0, 67.6, 32.4], ft: [9, 9, 9, 9.3, 9.3, 9.3, 46.7, 160.7] }
+  ];
+  const snr = sig.map(s => s === 0 ? '∞' : (20 * Math.log10(64.7 / s)).toFixed(0) + ' dB');
+  const fmtSig = s => s === 0 ? '0' : (s < 0.1 ? (s * 1000) + ' mA' : s + ' A');
+
+  const tb = document.querySelector('#noise-table tbody');
+  sig.forEach((s, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + fmtSig(s) + '</td><td>' + snr[i] + '</td>' +
+      series.map(d => '<td>' + d.dep[i].toFixed(1) + ' %</td>').join('') +
+      series.map(d => '<td>' + (Number.isInteger(d.ft[i]) ? d.ft[i] : d.ft[i].toFixed(1)) + '</td>').join('');
+    tb.appendChild(tr);
+  });
+
+  const W = 400, H = 250, m = { l: 44, r: 12, t: 12, b: 40 };
+  const xpos = s => s === 0 ? 0.0025 : s;
+  const lx0 = Math.log10(0.0025), lx1 = Math.log10(0.5);
+  const X = s => m.l + (Math.log10(xpos(s)) - lx0) / (lx1 - lx0) * (W - m.l - m.r);
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+
+  function draw(id, key, ymax, yticks, unit) {
+    const svg = document.getElementById(id);
+    const Y = v => H - m.b - v / ymax * (H - m.t - m.b);
+    yticks.forEach(v => {
+      el('line', { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), stroke: 'var(--grid)', 'stroke-width': 1 }, svg);
+      el('text', { x: m.l - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--muted)', 'font-family': 'var(--font-data)' }, svg).textContent = v + unit;
+    });
+    el('line', { x1: m.l, x2: W - m.r, y1: Y(0), y2: Y(0), stroke: 'var(--muted)', 'stroke-width': 1 }, svg);
+    sig.forEach(s => {
+      el('text', { x: X(s), y: H - m.b + 16, 'text-anchor': 'middle', 'font-size': 10.5, fill: 'var(--muted)', 'font-family': 'var(--font-data)' }, svg).textContent = s === 0 ? '0' : String(s).replace(/^0/, '');
+    });
+    el('text', { x: (m.l + W - m.r) / 2, y: H - 6, 'text-anchor': 'middle', 'font-size': 11.5, fill: 'var(--ink-2)' }, svg).textContent = 'noise σ per phase (A, log scale)';
+    series.forEach(d => {
+      const pts = sig.map((s, i) => X(s) + ',' + Y(Math.min(d[key][i], ymax))).join(' ');
+      el('polyline', { points: pts, fill: 'none', stroke: 'var(' + d.color + ')', 'stroke-width': 2, 'stroke-linejoin': 'round' }, svg);
+      sig.forEach((s, i) => el('circle', { cx: X(s), cy: Y(Math.min(d[key][i], ymax)), r: 4, fill: 'var(' + d.color + ')', stroke: 'var(--surface)', 'stroke-width': 2 }, svg));
+    });
+    const fig = svg.parentNode;
+    const tip = document.createElement('div');
+    tip.className = 'tip'; tip.hidden = true; fig.appendChild(tip);
+    const cross = el('line', { y1: m.t, y2: H - m.b, stroke: 'var(--muted)', 'stroke-width': 1, 'stroke-dasharray': '3 3', visibility: 'hidden' }, svg);
+    sig.forEach((s, i) => {
+      const left = i === 0 ? m.l : (X(sig[i - 1]) + X(s)) / 2;
+      const right = i === sig.length - 1 ? W - m.r : (X(s) + X(sig[i + 1])) / 2;
+      const hit = el('rect', { x: left, y: m.t, width: right - left, height: H - m.t - m.b, fill: 'transparent' }, svg);
+      const show = () => {
+        cross.setAttribute('x1', X(s)); cross.setAttribute('x2', X(s)); cross.setAttribute('visibility', 'visible');
+        tip.innerHTML = 'σ = ' + fmtSig(s) + '<br>' + series.map(d => d.name + ': ' + (key === 'dep' ? d.dep[i].toFixed(1) + ' %' : d.ft[i])).join('<br>');
+        tip.hidden = false;
+        const box = svg.getBoundingClientRect(), fb = fig.getBoundingClientRect();
+        const px = box.left - fb.left + X(s) / W * box.width;
+        tip.style.left = Math.min(Math.max(px + 10, 4), fb.width - tip.offsetWidth - 4) + 'px';
+        tip.style.top = (box.top - fb.top + 10) + 'px';
+      };
+      hit.addEventListener('mouseenter', show);
+      hit.addEventListener('mouseleave', () => { tip.hidden = true; cross.setAttribute('visibility', 'hidden'); });
+    });
+  }
+  draw('c-dep', 'dep', 100, [0, 25, 50, 75, 100], '%');
+  draw('c-ft', 'ft', 180, [0, 45, 90, 135, 180], '');
+})();
+</script>

@@ -1,0 +1,49 @@
+Relay,Case,TripMedian_ms,ClearMedian_ms,Missed_of_4
+RF,633A typical,25.2,81.425,0
+RF,633B typical,17.9,74.175,0
+RF,633C typical,21.025,77.05,0
+RF,675A typical,30.425,80.475,0
+RF,675B typical,28.325,85.125,0
+RF,675C typical,22.05,79.6,0
+RF,633B weak,36.675,92.875,0
+RF,675C weak,55.475,112.475,2
+LightGBM,633A typical,41.9,98.075,0
+LightGBM,633B typical,23.1,79.45,0
+LightGBM,633C typical,29.375,85.55,0
+LightGBM,675A typical,17.9,69.375,0
+LightGBM,675B typical,28.325,85.125,0
+LightGBM,675C typical,22.05,79.6,0
+LightGBM,633B weak,23.1,79.3,0
+LightGBM,675C weak,43.975,100.9,0
+CNN wide,633A typical,24.15,80.5,0
+CNN wide,633B typical,19.975,76.325,0
+CNN wide,633C typical,22.05,78.25,0
+CNN wide,675A typical,24.15,74.2,0
+CNN wide,675B typical,23.1,81.65,0
+CNN wide,675C typical,22.05,79.6,0
+CNN wide,633B weak,28.325,84.525,0
+CNN wide,675C weak,30.4,87.2,0
+RF noise-trained,633A typical,13.7,69.85,0
+RF noise-trained,633B typical,13.7,69.9,0
+RF noise-trained,633C typical,11.625,67.675,0
+RF noise-trained,675A typical,17.9,69.375,0
+RF noise-trained,675B typical,28.325,85.125,0
+RF noise-trained,675C typical,22.05,79.6,0
+RF noise-trained,633B weak,55.45,111.6,0
+RF noise-trained,675C weak,NaN,NaN,4
+LightGBM noise-trained,633A typical,13.7,69.85,0
+LightGBM noise-trained,633B typical,14.75,70.95,0
+LightGBM noise-trained,633C typical,11.625,67.675,0
+LightGBM noise-trained,675A typical,17.9,69.375,0
+LightGBM noise-trained,675B typical,23.1,81.65,0
+LightGBM noise-trained,675C typical,21.025,78.575,0
+LightGBM noise-trained,633B weak,36.675,92.875,0
+LightGBM noise-trained,675C weak,53.375,110.375,0
+CNN wide noise-trained,633A typical,18.925,75.175,0
+CNN wide noise-trained,633B typical,23.1,79.45,0
+CNN wide noise-trained,633C typical,19.975,76.175,0
+CNN wide noise-trained,675A typical,27.275,78.725,0
+CNN wide noise-trained,675B typical,23.1,81.65,0
+CNN wide noise-trained,675C typical,22.05,79.6,0
+CNN wide noise-trained,633B weak,30.4,86.6,0
+CNN wide noise-trained,675C weak,40.85,97.775,0

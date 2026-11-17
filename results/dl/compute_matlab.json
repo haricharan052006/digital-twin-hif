@@ -1,0 +1,31 @@
+{
+  "test_windows": 5161,
+  "threads": 1,
+  "feature_extraction": {
+    "median_ms": 1.9245,
+    "p99_ms": 3.3655920000000044,
+    "mean_ms": 2.0352141057934507,
+    "n": 5161
+  },
+  "rf": {
+    "trees": 100,
+    "nodes": 73682,
+    "leaves": 36891,
+    "internal_nodes": 36791,
+    "stored_kb_flat_double": 5180.765625,
+    "stored_kb_compact_ensemble_in_memory": 13287.1962890625,
+    "node_comparisons_per_decision_mean": 1225.8035264483626,
+    "latency_flat": {
+      "median_ms": 0.2419,
+      "p99_ms": 0.522689,
+      "mean_ms": 0.25876696376671171,
+      "n": 5161
+    },
+    "latency_features_plus_rf": {
+      "median_ms": 2.1693,
+      "p99_ms": 3.7633760000000063,
+      "mean_ms": 2.2939810695601635,
+      "n": 5161
+    }
+  }
+}

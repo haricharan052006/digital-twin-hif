@@ -1,0 +1,15 @@
+Criterion,Best,Value
+"Fault detection, no noise","LightGBM",97.1 %
+"Weak-arc detection, no noise","MLP",96.4 %
+"Fewest false trips, no noise","LightGBM, RF (noise)",2.0
+"Macro F1, no noise","LightGBM",0.966
+"AUC, HIF vs rest","LightGBM",0.9997
+"Fault detection, 20 mA","LightGBM",92.2 %
+"Fewest false trips, 20 mA","RF (noise)",2.0
+"Fault detection, 50 mA","LightGBM (noise)",92.9 %
+"Weak-arc detection, 50 mA","CNN wide (noise)",90.5 %
+"Fault detection, 0.1 A","CNN wide (noise)",91.3 %
+"Weak-arc detection, 0.1 A","CNN wide (noise)",91.7 %
+"Fewest false trips, 0.1 A","RF (noise)",3.0
+"Fault detection, 0.2 A","CNN wide (noise)",89.3 %
+"Weak-arc detection, 0.2 A","CNN wide (noise)",88.1 %

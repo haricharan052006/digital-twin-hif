@@ -1,0 +1,13 @@
+relay,caseName,tripped,tripTime633,tripTime675
+RF,Healthy,none,NaN,NaN
+RF,Cap bank 675 opens,none,NaN,NaN
+RF,Cap 611C opens,none,NaN,NaN
+RF,Load step 671,none,NaN,NaN
+LightGBM,Healthy,none,NaN,NaN
+LightGBM,Cap bank 675 opens,none,NaN,NaN
+LightGBM,Cap 611C opens,none,NaN,NaN
+LightGBM,Load step 671,none,NaN,NaN
+CNN wide,Healthy,none,NaN,NaN
+CNN wide,Cap bank 675 opens,none,NaN,NaN
+CNN wide,Cap 611C opens,none,NaN,NaN
+CNN wide,Load step 671,none,NaN,NaN

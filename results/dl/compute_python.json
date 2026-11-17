@@ -1,0 +1,94 @@
+{
+  "test_windows": 5161,
+  "cnn": [
+    {
+      "model": "cnn_ref",
+      "arch": "base",
+      "receptive_field_samples": 63,
+      "parameters": 26421,
+      "bn_buffers": 352,
+      "stored_kb_float32": 104.6,
+      "macs_per_decision": 2432736,
+      "latency_1thread": {
+        "median_ms": 0.26539992541074753,
+        "p99_ms": 0.8520000614225861,
+        "mean_ms": 0.31152187571047907,
+        "n": 5161
+      },
+      "latency_4thread": {
+        "median_ms": 0.3053999971598387,
+        "p99_ms": 0.8780000731348974,
+        "mean_ms": 0.4017681846219373,
+        "n": 5161
+      }
+    },
+    {
+      "model": "cnn_wide_ref",
+      "arch": "wide",
+      "receptive_field_samples": 703,
+      "parameters": 30645,
+      "bn_buffers": 480,
+      "stored_kb_float32": 121.6,
+      "macs_per_decision": 1873632,
+      "latency_1thread": {
+        "median_ms": 0.3385001327842474,
+        "p99_ms": 1.0078400373458858,
+        "mean_ms": 0.3753720387593388,
+        "n": 5161
+      },
+      "latency_4thread": {
+        "median_ms": 0.4065998364239931,
+        "p99_ms": 1.0621400084346522,
+        "mean_ms": 0.521067312605155,
+        "n": 5161
+      }
+    }
+  ],
+  "lgbm": [
+    {
+      "model": "lgbm_seed0",
+      "trees": 1060,
+      "boosting_rounds": 212,
+      "leaves": 28365,
+      "internal_nodes": 27305,
+      "stored_kb_text": 3192.8,
+      "node_comparisons_per_decision_mean": 5105.056578182523,
+      "latency_1thread_python_call": {
+        "median_ms": 0.08439994417130947,
+        "p99_ms": 0.20545316627249116,
+        "mean_ms": 0.08920955238863826,
+        "n": 2000
+      }
+    },
+    {
+      "model": "lgbm_seed1",
+      "trees": 1425,
+      "boosting_rounds": 285,
+      "leaves": 38949,
+      "internal_nodes": 37524,
+      "stored_kb_text": 4415.4,
+      "node_comparisons_per_decision_mean": 7194.609184266615,
+      "latency_1thread_python_call": {
+        "median_ms": 0.10859989561140537,
+        "p99_ms": 0.28027903754264105,
+        "mean_ms": 0.11507765064015985,
+        "n": 2000
+      }
+    },
+    {
+      "model": "lgbm_seed2",
+      "trees": 1360,
+      "boosting_rounds": 272,
+      "leaves": 36190,
+      "internal_nodes": 34830,
+      "stored_kb_text": 4102.5,
+      "node_comparisons_per_decision_mean": 6820.058128269715,
+      "latency_1thread_python_call": {
+        "median_ms": 0.1046500401571393,
+        "p99_ms": 0.23061212385073301,
+        "mean_ms": 0.1108896469231695,
+        "n": 2000
+      }
+    }
+  ]
+}

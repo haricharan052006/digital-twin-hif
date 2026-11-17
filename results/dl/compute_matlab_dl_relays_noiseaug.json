@@ -1,0 +1,9 @@
+{
+  "lgbm_with_features_median_ms": 6.6114,
+  "lgbm_with_features_p99_ms": 11.350843000000003,
+  "cnn_wide_median_ms": 1.1421999999999999,
+  "cnn_wide_p99_ms": 2.116445,
+  "n": 5161,
+  "lgbm_seed": 0,
+  "cnn_seed": 1
+}
