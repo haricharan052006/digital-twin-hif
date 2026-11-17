@@ -1,0 +1,46 @@
+﻿base: receptive field 63 samples = 3.15 ms = 0.19 cycles at 60 Hz (window 667 samples), 26421 parameters
+wide: receptive field 703 samples = 35.15 ms = 2.11 cycles at 60 Hz (window 667 samples), 30645 parameters
+
+=== base / slog (scaled input: mean 0.003, std 2.527, max |x| 8.57)
+activations at init: [{'dead_frac': 0.5, 'std': 0.7934}, {'dead_frac': 0.488, 'std': 0.2827}, {'dead_frac': 0.469, 'std': 0.1263}, {'dead_frac': 0.511, 'std': 0.0441}]
+grad norms step 1: {'features.0.0.weight': 1.2591, 'features.1.0.weight': 1.8608, 'features.2.0.weight': 2.0431, 'features.3.0.weight': 2.2229, 'head.1.weight': 4.4611}
+step 100: batch loss 0.7048, subset train accuracy 0.8140
+step 200: batch loss 0.6198, subset train accuracy 0.9060
+step 300: batch loss 0.3056, subset train accuracy 0.9460
+step 400: batch loss 0.2501, subset train accuracy 0.9760
+grad norms step 400: {'features.0.0.weight': 4.3046, 'features.1.0.weight': 2.2217, 'features.2.0.weight': 1.4136, 'features.3.0.weight': 0.9749, 'head.1.weight': 0.9749}
+activations after training: [{'dead_frac': 0.506, 'std': 0.5779}, {'dead_frac': 0.459, 'std': 0.5234}, {'dead_frac': 0.514, 'std': 0.5175}, {'dead_frac': 0.594, 'std': 0.6759}]
+per-class subset accuracy: [0.94, 0.97, 0.98, 0.99, 1.0]
+
+=== base / ref (scaled input: mean -0.000, std 0.389, max |x| 16.16)
+activations at init: [{'dead_frac': 0.501, 'std': 0.142}, {'dead_frac': 0.497, 'std': 0.0522}, {'dead_frac': 0.469, 'std': 0.0227}, {'dead_frac': 0.511, 'std': 0.0082}]
+grad norms step 1: {'features.0.0.weight': 1.1788, 'features.1.0.weight': 1.394, 'features.2.0.weight': 1.5882, 'features.3.0.weight': 2.0432, 'head.1.weight': 2.2902}
+step 100: batch loss 0.8771, subset train accuracy 0.6480
+step 200: batch loss 0.7212, subset train accuracy 0.7700
+step 300: batch loss 0.6069, subset train accuracy 0.8520
+step 400: batch loss 0.6509, subset train accuracy 0.9000
+grad norms step 400: {'features.0.0.weight': 1.4168, 'features.1.0.weight': 1.6205, 'features.2.0.weight': 1.4481, 'features.3.0.weight': 1.3144, 'head.1.weight': 1.5511}
+activations after training: [{'dead_frac': 0.435, 'std': 0.7214}, {'dead_frac': 0.278, 'std': 0.333}, {'dead_frac': 0.457, 'std': 0.4316}, {'dead_frac': 0.63, 'std': 0.684}]
+per-class subset accuracy: [0.8, 0.92, 0.92, 0.89, 0.97]
+
+=== wide / slog (scaled input: mean 0.003, std 2.527, max |x| 8.57)
+activations at init: [{'dead_frac': 0.5, 'std': 0.7934}, {'dead_frac': 0.488, 'std': 0.2827}, {'dead_frac': 0.488, 'std': 0.1281}, {'dead_frac': 0.491, 'std': 0.0583}, {'dead_frac': 0.438, 'std': 0.0258}, {'dead_frac': 0.595, 'std': 0.0076}, {'dead_frac': 0.473, 'std': 0.0029}]
+grad norms step 1: {'features.0.0.weight': 2.3404, 'features.1.0.weight': 2.3968, 'features.2.0.weight': 2.8022, 'features.3.0.weight': 2.1086, 'features.4.0.weight': 1.9912, 'features.5.0.weight': 1.8643, 'features.6.0.weight': 1.3842, 'head.1.weight': 6.0842}
+step 100: batch loss 0.4564, subset train accuracy 0.8560
+step 200: batch loss 0.1616, subset train accuracy 0.9800
+step 300: batch loss 0.1006, subset train accuracy 0.9980
+step 400: batch loss 0.0236, subset train accuracy 1.0000
+grad norms step 400: {'features.0.0.weight': 1.0506, 'features.1.0.weight': 0.9022, 'features.2.0.weight': 0.7791, 'features.3.0.weight': 0.8532, 'features.4.0.weight': 0.7123, 'features.5.0.weight': 0.3974, 'features.6.0.weight': 0.1341, 'head.1.weight': 0.1668}
+activations after training: [{'dead_frac': 0.502, 'std': 0.5727}, {'dead_frac': 0.486, 'std': 0.5577}, {'dead_frac': 0.508, 'std': 0.5674}, {'dead_frac': 0.508, 'std': 0.5668}, {'dead_frac': 0.501, 'std': 0.5488}, {'dead_frac': 0.512, 'std': 0.5278}, {'dead_frac': 0.558, 'std': 0.7341}]
+per-class subset accuracy: [1.0, 1.0, 1.0, 1.0, 1.0]
+
+=== wide / ref (scaled input: mean -0.000, std 0.389, max |x| 16.16)
+activations at init: [{'dead_frac': 0.501, 'std': 0.142}, {'dead_frac': 0.497, 'std': 0.0522}, {'dead_frac': 0.48, 'std': 0.023}, {'dead_frac': 0.489, 'std': 0.0109}, {'dead_frac': 0.439, 'std': 0.005}, {'dead_frac': 0.588, 'std': 0.0015}, {'dead_frac': 0.472, 'std': 0.0006}]
+grad norms step 1: {'features.0.0.weight': 1.1889, 'features.1.0.weight': 1.9666, 'features.2.0.weight': 2.3193, 'features.3.0.weight': 1.8686, 'features.4.0.weight': 1.4824, 'features.5.0.weight': 1.6367, 'features.6.0.weight': 1.3997, 'head.1.weight': 3.1744}
+step 100: batch loss 0.8784, subset train accuracy 0.6880
+step 200: batch loss 0.4191, subset train accuracy 0.8700
+step 300: batch loss 0.2174, subset train accuracy 0.9300
+step 400: batch loss 0.1942, subset train accuracy 0.9340
+grad norms step 400: {'features.0.0.weight': 0.7515, 'features.1.0.weight': 0.8464, 'features.2.0.weight': 0.8578, 'features.3.0.weight': 0.8843, 'features.4.0.weight': 1.0278, 'features.5.0.weight': 0.8397, 'features.6.0.weight': 0.3872, 'head.1.weight': 0.5474}
+activations after training: [{'dead_frac': 0.443, 'std': 0.6619}, {'dead_frac': 0.323, 'std': 0.457}, {'dead_frac': 0.452, 'std': 0.5492}, {'dead_frac': 0.571, 'std': 0.6543}, {'dead_frac': 0.501, 'std': 0.5763}, {'dead_frac': 0.517, 'std': 0.5635}, {'dead_frac': 0.568, 'std': 0.7071}]
+per-class subset accuracy: [0.82, 0.91, 0.98, 0.98, 0.98]

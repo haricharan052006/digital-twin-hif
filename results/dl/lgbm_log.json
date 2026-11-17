@@ -1,0 +1,84 @@
+{
+  "params": {
+    "objective": "multiclass",
+    "num_class": 5,
+    "learning_rate": 0.05,
+    "num_leaves": 31,
+    "min_data_in_leaf": 20,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 0.8,
+    "bagging_freq": 1,
+    "lambda_l2": 1.0,
+    "num_threads": 4,
+    "verbose": -1,
+    "deterministic": true,
+    "force_row_wise": true
+  },
+  "max_rounds": 2000,
+  "early_stop": 100,
+  "cv": [
+    {
+      "fold": 1,
+      "seed": 0,
+      "best_iteration": 169,
+      "fit_s": 3.1,
+      "fit_windows": 13189,
+      "early_stop_windows": 3324
+    },
+    {
+      "fold": 2,
+      "seed": 0,
+      "best_iteration": 209,
+      "fit_s": 3.6,
+      "fit_windows": 13189,
+      "early_stop_windows": 3324
+    },
+    {
+      "fold": 3,
+      "seed": 0,
+      "best_iteration": 277,
+      "fit_s": 4.4,
+      "fit_windows": 13189,
+      "early_stop_windows": 3325
+    },
+    {
+      "fold": 4,
+      "seed": 0,
+      "best_iteration": 151,
+      "fit_s": 2.9,
+      "fit_windows": 13189,
+      "early_stop_windows": 3325
+    },
+    {
+      "fold": 5,
+      "seed": 0,
+      "best_iteration": 130,
+      "fit_s": 2.6,
+      "fit_windows": 13189,
+      "early_stop_windows": 3325
+    }
+  ],
+  "final": [
+    {
+      "seed": 0,
+      "best_iteration": 212,
+      "fit_s": 4.2,
+      "fit_windows": 16514,
+      "early_stop_windows": 4128
+    },
+    {
+      "seed": 1,
+      "best_iteration": 285,
+      "fit_s": 5.2,
+      "fit_windows": 16513,
+      "early_stop_windows": 4129
+    },
+    {
+      "seed": 2,
+      "best_iteration": 272,
+      "fit_s": 6.5,
+      "fit_windows": 16514,
+      "early_stop_windows": 4128
+    }
+  ]
+}
