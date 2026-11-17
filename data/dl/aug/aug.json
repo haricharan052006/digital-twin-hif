@@ -1,0 +1,14 @@
+{
+  "copies": 2,
+  "sigma_min": 0.005,
+  "sigma_max": 0.1,
+  "distribution": "log-uniform",
+  "seed": 3031,
+  "n": 41284,
+  "shape": [
+    41284,
+    3,
+    667
+  ],
+  "n_features": 87
+}
