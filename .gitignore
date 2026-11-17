@@ -15,6 +15,10 @@ data/dl/aug/*.bin
 # Manual checkpoint copies (contain raw_residuals.mat, > GitHub's 100 MB limit)
 backups/
 
+# 66 MB classifier bundle (RF/SVM/MLP): too large for the slow upload link;
+# regenerate with scripts/train_classifiers.m
+models/trained_classifiers.mat
+
 # Personal / course material kept off the public repository
 poster/
 presentation/
