@@ -1,0 +1,27 @@
+# Simulink build artifacts / caches
+slprj/
+*.slxc
+*.asv
+*.autosave
+*.slx.r20*
+*.mexw64
+
+# Large regenerable data (> GitHub 100 MB limit; rebuild via scripts/generate_dataset.m)
+data/raw_residuals.mat
+data/dl/*.bin
+data/dl/noise/*.bin
+data/dl/aug/*.bin
+
+# Manual checkpoint copies (contain raw_residuals.mat, > GitHub's 100 MB limit)
+backups/
+
+# Personal / course material kept off the public repository
+poster/
+presentation/
+report_src/
+results/Final_Capstone_Report_HIF_Digital_Twin.*
+.mcp.json
+
+# Local Claude Code state
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
